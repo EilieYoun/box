@@ -17,7 +17,7 @@ def make_grid(images, rows, cols):
 
 class DDPM():
     def __init__(self,
-                 unet_dict = { 'sample_size':256,  
+                 unet_dict = { 'sample_size':128,  
                                'in_channels':1, 
                                'out_channels':1, 
                                'layers_per_block':2, 
@@ -121,7 +121,7 @@ class DDPM():
 
             # End Epoch
             if accelerator.is_main_process:
-
+                        
                 if (epoch + 1) % save_image_epochs == 0 or epoch == num_epochs - 1:
                     images = self.infer(n=4, seed=seed)
                     grid = make_grid(images, rows=1, cols=4)
@@ -134,15 +134,12 @@ class DDPM():
                     pipeline.save_pretrained(output_dir)
                 
 
-    def infer(self, n=4, seed=1, output_type='pil', num_inference_steps=1000,  device='cuda'):
+    def infer(self, n=4, seed=1, output_type='pil', num_inference_steps=30,  device='cuda'):
         pipeline = DDPMPipeline(unet=self.unet.to(device), scheduler=self.noise_scheduler).to(device)
         images = pipeline( batch_size=n,
                            generator=torch.manual_seed(seed),
                            output_type=output_type,
                            num_inference_steps=num_inference_steps,
                          ).images
-
-        # Make a grid out of the images
         
         return images
-    
